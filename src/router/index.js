@@ -32,6 +32,10 @@ import Layout from '@/layout'
  */
 export const constantRoutes = [
   {
+    path: '/',
+    redirect: '/applicant/list'
+  },
+  {
     path: '/login',
     component: () => import('@/views/login/index'),
     hidden: true
@@ -41,11 +45,6 @@ export const constantRoutes = [
     path: '/404',
     component: () => import('@/views/404'),
     hidden: true
-  },
-
-  {
-    path: '/',
-    redirect: '/applicant/applicant'
   },
 
   {

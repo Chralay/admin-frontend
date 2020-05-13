@@ -1,19 +1,11 @@
 <template>
-    <div>
-        招聘者
-    </div>    
+  <div>招聘者</div>
 </template>
 
 <script>
-export default {
-    
-}
+export default {}
 </script>
-
 
 <style scoped>
 
 </style>
-
-
-
