@@ -1,11 +1,15 @@
 <template>
-  <div>
+  <div class="contain">
+    <div class="head">
+      <el-input v-model="input" placeholder="查询招聘者" class="input" />
+      <el-button type="primary" icon="el-icon-search" @click="find">搜索</el-button>
+    </div>
     <el-table v-loading="loading" :data="interviewers" stripe>
       <el-table-column type="index" width="50" />
       <el-table-column label="头像" width="100">
-        <!-- 暂时用不了 -->
         <template slot-scope="scope">
-          <img :src="scope.row.avatarUrl" alt height="50" />
+          <!-- <img :src="scope.row.avatarUrl" alt height="50" /> -->
+          <el-avatar :size="50" :src="scope.row.avatarUrl" />
         </template>
       </el-table-column>
       <el-table-column prop="nickName" label="姓名" />
@@ -31,7 +35,7 @@
 </template>
 
 <script>
-import { fetchList, del } from '@/api/interviewer'
+import { fetchList, del, fetchByName } from '@/api/interviewer'
 import scroll from '@/utils/scroll'
 export default {
   data() {
@@ -39,6 +43,7 @@ export default {
       interviewers: [],
       count: 50,
       loading: false,
+      input: '',
       // 删除应聘者的对话框是否显示
       delDialogVisible: false,
       info: {}
@@ -59,20 +64,24 @@ export default {
       }).then(res => {
         console.log(res)
         var interviewers = res.data
-        for (let i = 0, len = interviewers.length; i < len; i++) {
-          if (interviewers[i].gender === 1) {
-            interviewers[i].gender = '男'
-          } else {
-            interviewers[i].gender = '女'
-          }
-        }
-        this.interviewers = this.interviewers.concat(interviewers)
+        this.interviewers = this.interviewers.concat(this.filter(interviewers))
         if (interviewers.length < this.count) {
           scroll.end()
         }
         console.log(this.interviewers)
       })
       this.loading = false
+    },
+    // 对数据格式进行处理
+    filter(interviewers) {
+      for (let i = 0, len = interviewers.length; i < len; i++) {
+        if (interviewers[i].gender === 1) {
+          interviewers[i].gender = '男'
+        } else {
+          interviewers[i].gender = '女'
+        }
+      }
+      return interviewers
     },
     onDel(row) {
       this.delDialogVisible = true
@@ -95,11 +104,48 @@ export default {
           this.$message.error('删除失败')
         }
       })
+    },
+    find() {
+      this.loading = true
+      var flag = true
+      // 先在这里的数据组搜索，搜索不出来再调用云函数
+      for (let i = 0, len = this.interviewers.length; i < len; i++) {
+        if (this.interviewers[i].nickName === this.input) {
+          this.interviewers = [].concat(this.interviewers[i])
+          flag = false
+          this.loading = false
+          break
+        }
+      }
+      if (flag) {
+        // 去调用云函数
+        fetchByName({
+          nickName: this.input
+        }).then((res) => {
+          console.log(res)
+          this.loading = false
+          if (res.data.length === 0) {
+            this.$message.error('不存在该招聘者')
+          } else {
+            this.interviewers = [].concat(this.filter(res.data))
+          }
+        })
+      }
     }
   }
 }
 </script>
 
 <style scoped>
-
+.contain{
+  width: 98%;
+  margin:auto;
+}
+.head{
+  margin-top: 15px;
+  margin-bottom: 30px;
+}
+.input{
+  width: 20%;
+}
 </style>

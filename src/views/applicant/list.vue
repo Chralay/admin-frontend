@@ -1,11 +1,15 @@
 <template>
-  <div>
+  <div class="contain">
+    <div class="head">
+      <el-input v-model="input" placeholder="查询应聘者" class="input" />
+      <el-button type="primary" icon="el-icon-search" @click="find">搜索</el-button>
+    </div>
     <el-table v-loading="loading" :data="applicants" stripe>
       <el-table-column type="index" width="50" />
       <el-table-column label="头像" width="100">
-        <!-- 暂时用不了 -->
         <template slot-scope="scope">
-          <img :src="scope.row.avatarUrl" alt height="50">
+          <!-- <img :src="scope.row.avatarUrl" alt height="50"> -->
+          <el-avatar :size="50" :src="scope.row.avatarUrl" />
         </template>
       </el-table-column>
       <el-table-column prop="nickName" label="姓名" />
@@ -32,7 +36,7 @@
 </template>
 
 <script>
-import { fetchList, del } from '@/api/applicant'
+import { fetchList, del, fetchByName } from '@/api/applicant'
 import scroll from '@/utils/scroll'
 export default {
   data() {
@@ -40,6 +44,7 @@ export default {
       applicants: [],
       count: 50,
       loading: false,
+      input: '',
       // 删除应聘者的对话框是否显示
       delDialogVisible: false,
       info: {}
@@ -60,27 +65,31 @@ export default {
       }).then(res => {
         console.log(res)
         var applicants = res.data
-        for (let i = 0, len = applicants.length; i < len; i++) {
-          if (applicants[i].gender === 1) {
-            applicants[i].gender = '男'
-          } else {
-            applicants[i].gender = '女'
-          }
-          if (applicants[i].applicantType === 0) {
-            applicants[i].applicantType = '应届生'
-          } else if (applicants[i].applicantType === 1) {
-            applicants[i].applicantType = '在校生'
-          } else if (applicants[i].applicantType === 2) {
-            applicants[i].applicantType = '职场人'
-          }
-        }
-        this.applicants = this.applicants.concat(applicants)
+        this.applicants = this.applicants.concat(this.filter(applicants))
         if (applicants.length < this.count) {
           scroll.end()
         }
         // console.log(this.applicants)
       })
       this.loading = false
+    },
+    // 对数据格式进行处理
+    filter(applicants) {
+      for (let i = 0, len = applicants.length; i < len; i++) {
+        if (applicants[i].gender === 1) {
+          applicants[i].gender = '男'
+        } else {
+          applicants[i].gender = '女'
+        }
+        if (applicants[i].applicantType === 0) {
+          applicants[i].applicantType = '应届生'
+        } else if (applicants[i].applicantType === 1) {
+          applicants[i].applicantType = '在校生'
+        } else if (applicants[i].applicantType === 2) {
+          applicants[i].applicantType = '职场人'
+        }
+      }
+      return applicants
     },
     onDel(row) {
       this.delDialogVisible = true
@@ -93,7 +102,7 @@ export default {
       }).then((res) => {
         this.delDialogVisible = false
         if (res.data.deleted > 0) {
-          this.playlist = []
+          this.applicants = []
           this.getList()
           this.$message({
             message: '删除成功',
@@ -103,10 +112,48 @@ export default {
           this.$message.error('删除失败')
         }
       })
+    },
+    find() {
+      this.loading = true
+      var flag = true
+      // 先在这里的数据组搜索，搜索不出来再调用云函数
+      for (let i = 0, len = this.applicants.length; i < len; i++) {
+        if (this.applicants[i].nickName === this.input) {
+          this.applicants = [].concat(this.applicants[i])
+          flag = false
+          this.loading = false
+          break
+        }
+      }
+      if (flag) {
+        // 去调用云函数
+        fetchByName({
+          nickName: this.input
+        }).then((res) => {
+          console.log(res)
+          this.loading = false
+          if (res.data.length === 0) {
+            this.$message.error('不存在该应聘者')
+          } else {
+            this.applicants = [].concat(this.filter(res.data))
+          }
+        })
+      }
     }
   }
 }
 </script>
 
-<style>
+<style scoped>
+.contain{
+  width: 98%;
+  margin:auto;
+}
+.head{
+  margin-top: 15px;
+  margin-bottom: 30px;
+}
+.input{
+  width: 20%;
+}
 </style>

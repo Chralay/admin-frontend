@@ -25,3 +25,11 @@ export function del(params) {
     method: 'get'
   })
 }
+
+export function fetchByName(params) {
+  return request({
+    params,
+    url: `${baseURL}/applicant/getByName`,
+    method: 'get'
+  })
+}

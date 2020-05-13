@@ -16,3 +16,11 @@ export function del(params) {
     method: 'get'
   })
 }
+
+export function fetchByName(params) {
+  return request({
+    params,
+    url: `${baseURL}/interviewer/getByName`,
+    method: 'get'
+  })
+}
