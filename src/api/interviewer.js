@@ -4,16 +4,7 @@ const baseURL = 'http://localhost:3000'
 export function fetchList(params) {
   return request({
     params,
-    url: `${baseURL}/applicant/list`,
-    method: 'get'
-  })
-}
-
-// 这个还没用到
-export function fetchById(params) {
-  return request({
-    params,
-    url: `${baseURL}/applicant/getById`,
+    url: `${baseURL}/interviewer/list`,
     method: 'get'
   })
 }
@@ -21,7 +12,7 @@ export function fetchById(params) {
 export function del(params) {
   return request({
     params,
-    url: `${baseURL}/applicant/del`,
+    url: `${baseURL}/interviewer/del`,
     method: 'get'
   })
 }
