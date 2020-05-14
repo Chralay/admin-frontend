@@ -18,3 +18,19 @@ export function updatePass(params) {
     method: 'post'
   })
 }
+
+export function fetchByName(params) {
+  return request({
+    params,
+    url: `${baseURL}/company/getByName`,
+    method: 'get'
+  })
+}
+
+export function fetchJobsByName(params) {
+  return request({
+    params,
+    url: `${baseURL}/company/getJobsByName`,
+    method: 'get'
+  })
+}
