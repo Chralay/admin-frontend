@@ -56,19 +56,18 @@
           <el-button
             size="mini"
             type="primary"
-            @click.stop="showJobList"
             @click="onPass(scope.row)"
+            @click.stop="jobListTableVisible = false"
           >审核</el-button>
-          <el-button
+          <!-- <el-button
             size="mini"
             type="danger"
-            @click.stop="showJobList"
             @click="onDelCompany(scope.row)"
-          >删除</el-button>
+            @click.stop="jobListTableVisible = false"
+          >删除</el-button>-->
         </template>
       </el-table-column>
     </el-table>
-    <!--v-if="pageshow" <el-pagination layout="prev, pager, next" :total="50" /> -->
     <el-pagination
       :current-page="page"
       :page-sizes="[10, 20, 50]"
@@ -123,13 +122,13 @@
     </el-dialog>
 
     <!-- 确认删除公司的对话框 -->
-    <el-dialog title="提示" :visible.sync="delDialogVisible" width="30%">
+    <!-- <el-dialog title="提示" :visible.sync="delDialogVisible" width="30%">
       <span>确定删除该公司吗</span>
       <span slot="footer" class="dialog-footer">
         <el-button @click="delDialogVisible = false">取消</el-button>
         <el-button type="primary" @click="doDelCompany">确定</el-button>
       </span>
-    </el-dialog>
+    </el-dialog>-->
 
     <!-- 确认删除职位的对话框 -->
     <el-dialog title="提示" :visible.sync="delJobDialogVisible" width="30%">
@@ -143,8 +142,7 @@
 </template>
 
 <script>
-import { fetchList, del, fetchByName, updatePass, fetchJobsByName } from '@/api/company'
-// import scroll from '@/utils/scroll'
+import { fetchList, fetchByName, updatePass, fetchJobsByName, delJob } from '@/api/company'
 export default {
   data() {
     return {
@@ -161,9 +159,9 @@ export default {
       // 与审核相关的
       passDialogVisible: false,
       passInfo: {},
-      // 删除公司的对话框是否显示
-      delDialogVisible: false,
-      info: {},
+      // 删除公司的对话框是否显示（没打算做，因为删公司的话，对应的数据库job、interview-manager都要进行删除，很麻烦。而且不应该给管理员这么大的权限）
+      // delDialogVisible: false,
+      // info: {},
       // 与公司相对应的职位
       jobList: [],
       jobListTableVisible: false,
@@ -258,35 +256,50 @@ export default {
         }
       })
     },
-    onDelCompany(row) {
-      this.delDialogVisible = true
-      this.info.id = row._id
-      console.log(this.info)
+    // onDelCompany(row) {
+    //   this.delDialogVisible = true
+    //   this.info.id = row._id
+    //   console.log(this.info)
+    // },
+    // doDelCompany() {
+    // 先不动它，它牵扯比较广 del没写的
+    // del({
+    //   id: this.info.id
+    // }).then((res) => {
+    //   this.delDialogVisible = false
+    //   if (res.data.deleted > 0) {
+    //     this.companys = []
+    //     this.pageList()
+    //     this.$message({
+    //       message: '删除成功',
+    //       type: 'success'
+    //     })
+    //   } else {
+    //     this.$message.error('删除失败')
+    //   }
+    // })
+    // },
+    onDelJob(row) {
+      this.delJobDialogVisible = true
+      this.jobInfo.id = row.jobId
+      this.jobInfo.jobName = row.jobName
+      // console.log(this.jobInfo)//ok
     },
-    doDelCompany() {
-      del({
-        id: this.info.id
+    doDelJob() {
+      delJob({
+        jobId: this.jobInfo.id
       }).then((res) => {
-        this.delDialogVisible = false
+        this.delJobDialogVisible = false
         if (res.data.deleted > 0) {
-          this.companys = []
-          this.pageList()
           this.$message({
             message: '删除成功',
             type: 'success'
           })
+          this.jobListTableVisible = false // 关闭职位列表，让用户重新打开。（因为做不出自动刷新）
         } else {
           this.$message.error('删除失败')
         }
       })
-    },
-    onDelJob(row) {
-      this.delJobDialogVisible = true
-      this.jobInfo.id = row.jobId
-      // console.log(this.jobInfo)//ok
-    },
-    doDelJob() {
-      
     },
     // 查找公司名
     find() {

@@ -34,3 +34,11 @@ export function fetchJobsByName(params) {
     method: 'get'
   })
 }
+
+export function delJob(params) {
+  return request({
+    params,
+    url: `${baseURL}/company/delJob`,
+    method: 'get'
+  })
+}
